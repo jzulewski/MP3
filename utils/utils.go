@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"MP1/utils"
 	"bufio"
 	"fmt"
 	"os"
@@ -15,9 +16,16 @@ type Config struct {
 }
 
 type Node struct {
-	Id   string
-	Ip   string
-	Port string
+	Id    string
+	Input float64
+	Ip    string
+	Port  string
+}
+
+type Message struct {
+	From  string
+	Round int
+	Value float64
 }
 
 // Consolidated repeated error checks into a single function
@@ -42,7 +50,9 @@ func CreateConfigStruct() Config {
 	for scanner.Scan() {
 		txtlines = append(txtlines, scanner.Text())
 	}
-	file.Close()
+
+	err = file.Close()
+	utils.CheckError(err)
 
 	// Get min and max delay
 	line := strings.Split(txtlines[0], " ")
@@ -54,7 +64,9 @@ func CreateConfigStruct() Config {
 	for _, line := range txtlines[1:] {
 		// For each line, create node struct and add it to list of nodes
 		list := strings.Split(line, " ")
-		node := Node{Id: list[0], Ip: list[1], Port: list[2]}
+		input, err := strconv.ParseFloat(list[1], 64)
+		utils.CheckError(err)
+		node := Node{Id: list[0], Input: input, Ip: list[2], Port: list[3]}
 		nodeList = append(nodeList, node)
 	}
 
