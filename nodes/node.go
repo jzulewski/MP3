@@ -30,6 +30,25 @@ func unicast_receive(valChan chan float64, conn net.Conn) {
 	valChan <- message.Value
 }
 
+func unicast_send(nodeSend utils.Node, nodeReceive utils.Node) {
+
+	ip := nodeReceive.Ip
+	port := nodeReceive.Port
+	CONNECT := ip + ":" + port
+
+	//Connect to NodeReceive
+	_, err := net.Dial("tcp", CONNECT)
+	utils.CheckError(err)
+
+	//TODO Send message
+
+	print(" Input: ")
+	print(nodeSend.Input)
+	print(" Id: ")
+	print(nodeReceive.Id)
+
+}
+
 func processIncomingValues(valChan chan float64) {
 
 }

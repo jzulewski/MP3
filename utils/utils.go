@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"MP1/utils"
 	"bufio"
 	"fmt"
 	"os"
@@ -52,7 +51,7 @@ func CreateConfigStruct() Config {
 	}
 
 	err = file.Close()
-	utils.CheckError(err)
+	CheckError(err)
 
 	// Get min and max delay
 	line := strings.Split(txtlines[0], " ")
@@ -65,7 +64,7 @@ func CreateConfigStruct() Config {
 		// For each line, create node struct and add it to list of nodes
 		list := strings.Split(line, " ")
 		input, err := strconv.ParseFloat(list[1], 64)
-		utils.CheckError(err)
+		CheckError(err)
 		node := Node{Id: list[0], Input: input, Ip: list[2], Port: list[3]}
 		nodeList = append(nodeList, node)
 	}

@@ -13,5 +13,5 @@ func main() {
 	nodes.InitializeNodes(config.Nodes)
 
 	// Initialize connections between nodes
-	nodes.InitializeConnections()
+	nodes.InitializeConnections(config.Nodes)
 }

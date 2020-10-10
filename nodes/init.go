@@ -18,6 +18,15 @@ func startServer(node utils.Node) net.Listener {
 	return ln
 }
 
-func InitializeConnections() {
+func InitializeConnections(nodes []utils.Node) {
+
+	//this Node send values
+	for _, nodeSend := range nodes {
+
+		//to all these Nodes (including itself)
+		for _, nodeReceive := range nodes {
+			unicast_send(nodeSend, nodeReceive)
+		}
+	}
 
 }
