@@ -23,11 +23,14 @@ func handleConnections(valChan chan float64, node utils.Node, ln net.Listener) {
 }
 
 func unicast_receive(valChan chan float64, conn net.Conn) {
-	var message utils.Message
-	decoder := gob.NewDecoder(conn)
-	err := decoder.Decode(&message)
-	utils.CheckError(err)
-	valChan <- message.Value
+	for {
+		var message utils.Message
+		decoder := gob.NewDecoder(conn)
+		err := decoder.Decode(&message)
+		utils.CheckError(err)
+		valChan <- message.Value
+	}
+
 }
 
 func unicast_send(nodeSend utils.Node, nodeReceive utils.Node) {
@@ -37,10 +40,10 @@ func unicast_send(nodeSend utils.Node, nodeReceive utils.Node) {
 	CONNECT := ip + ":" + port
 
 	//Connect to NodeReceive
-	_, err := net.Dial("tcp", CONNECT)
+	conn, err := net.Dial("tcp", CONNECT)
 	utils.CheckError(err)
 
-	//TODO Send message
+	nodeReceive.Conns = append(nodeReceive.Conns, conn)
 
 	print(" Input: ")
 	print(nodeSend.Input)

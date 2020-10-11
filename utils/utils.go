@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -19,6 +20,7 @@ type Node struct {
 	Input float64
 	Ip    string
 	Port  string
+	Conns []net.Conn
 }
 
 type Message struct {
