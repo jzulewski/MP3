@@ -68,7 +68,7 @@ func processIncomingValues(valChan chan utils.Message, node utils.Node, config u
 			newValue := sum / float64(n-f)
 			fmt.Printf("Node %s, Value %f, Round %d\n", from, newValue, round)
 			go multicast(node.Conns,
-				utils.Message{From: from, Round: round, Value: newValue},
+				utils.Message{From: from, Round: round + 1, Value: newValue},
 				config.MinDelay,
 				config.MaxDelay)
 			for _, message := range futureMessages {
@@ -82,9 +82,12 @@ func processIncomingValues(valChan chan utils.Message, node utils.Node, config u
 }
 
 func multicast(conns []net.Conn, message utils.Message, min, max int) {
+	rand.Seed(time.Now().UnixNano())
 	for _, conn := range conns {
-		// TODO: implement crash chance here
-		unicast_send(conn, message, min, max)
+		number := rand.Intn(100)
+		if number < 95 {
+			unicast_send(conn, message, min, max)
+		}
 	}
 }
 
