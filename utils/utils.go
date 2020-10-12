@@ -14,6 +14,7 @@ type Config struct {
 	MaxDelay int
 	F        int
 	Nodes    []Node
+	MServer  Server
 }
 
 type Node struct {
@@ -23,6 +24,12 @@ type Node struct {
 	Port   string
 	Conns  []net.Conn
 	Server net.Listener
+}
+
+type Server struct {
+	Ip    string
+	Port  string
+	Conns []net.Conn
 }
 
 type Message struct {
@@ -63,9 +70,13 @@ func CreateConfigStruct() Config {
 	max, _ := strconv.Atoi(line[1])
 	f, _ := strconv.Atoi(line[2])
 
+	// Get master server info
+	line = strings.Split(txtlines[1], " ")
+	server := Server{Ip: line[0], Port: line[1], Conns: []net.Conn{}}
+
 	// Get list of nodes. Loop through config file lines, skipping line 1 since it contains delay params
 	var nodeList []Node
-	for _, line := range txtlines[1:] {
+	for _, line := range txtlines[2:] {
 		// For each line, create node struct and add it to list of nodes
 		list := strings.Split(line, " ")
 		input, err := strconv.ParseFloat(list[1], 64)
@@ -74,5 +85,5 @@ func CreateConfigStruct() Config {
 		nodeList = append(nodeList, node)
 	}
 
-	return Config{MinDelay: min, MaxDelay: max, F: f, Nodes: nodeList}
+	return Config{MinDelay: min, MaxDelay: max, F: f, Nodes: nodeList, MServer: server}
 }
