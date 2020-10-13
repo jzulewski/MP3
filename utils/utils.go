@@ -33,9 +33,11 @@ type Server struct {
 }
 
 type Message struct {
-	From  string
-	Round int
-	Value float64
+	From   string
+	Round  int
+	Value  float64
+	Fail   bool
+	Output bool
 }
 
 // Consolidated repeated error checks into a single function
