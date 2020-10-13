@@ -2,23 +2,32 @@ package main
 
 import (
 	"MP3/nodes"
+	"MP3/server"
 	"MP3/utils"
+	"sync"
 )
 
 func main() {
 	// Initialize config struct
 	config := utils.CreateConfigStruct()
 
+	// Initialize master server
+	server.InitializeMasterServer(&config)
+
 	// Initialize node processes
-	nodes.InitializeNodeServers(config)
+	nodes.InitializeNodeServers(&config)
+
+	// Initialize connections between master server and node servers
+	server.InitializeServerConnections(&config)
 
 	// Initialize connections between nodes
-	nodes.InitializeConnections(config.Nodes)
+	nodes.InitializeNodeConnections(&config)
 
 	// Begin Simulation
-	nodes.StartSimulation(config)
+	var wg sync.WaitGroup
+	nodes.StartSimulation(&wg, config)
 
-	ch := make(chan int)
-	temp := <-ch
-	print(temp)
+	// Wait for goroutines to finish
+	wg.Wait()
+	println("Simulation finished")
 }
