@@ -5,13 +5,14 @@ import (
 	"net"
 )
 
-func InitializeMasterServer(config utils.Config) {
+func InitializeMasterServer(config *utils.Config) {
 	ln, err := net.Listen("tcp", ":"+config.MServer.Port)
 	utils.CheckError(err)
-	handleServer(config, ln)
+	go handleServer(config, ln)
 }
 
-func InitializeServerConnections(server utils.Server, nodes []utils.Node) {
+func InitializeServerConnections(config *utils.Config) {
+	nodes := config.Nodes
 	for _, node := range nodes {
 
 		ip := node.Ip
@@ -23,6 +24,6 @@ func InitializeServerConnections(server utils.Server, nodes []utils.Node) {
 		utils.CheckError(err)
 
 		// Append to server conns list
-		server.Conns = append(server.Conns, conn)
+		config.MServer.Conns = append(config.MServer.Conns, conn)
 	}
 }
