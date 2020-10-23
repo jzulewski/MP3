@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"runtime/debug"
 	"strconv"
 	"strings"
 )
@@ -43,7 +44,8 @@ type Message struct {
 // Consolidated repeated error checks into a single function
 func CheckError(err error) {
 	if err != nil {
-		fmt.Println("Fatal error ", err.Error())
+		fmt.Println("Fatal error: ", err.Error())
+		debug.PrintStack()
 		os.Exit(1)
 	}
 }

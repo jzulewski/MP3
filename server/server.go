@@ -35,13 +35,24 @@ func unicast_receive(ch chan utils.Message, conn net.Conn) {
 
 func processIncomingValues(ch chan utils.Message, config *utils.Config) {
 	n := len(config.Nodes)
+	f := config.F
+	cf := 0
 	states := make(map[string]float64)
 	for {
 		message := <-ch
-		states[message.From] = message.Value
-		if len(states) == n && checkStates(states) {
-			message := utils.Message{Output: true}
-			multicast(message, config.MServer.Conns)
+		if message.Fail {
+			cf++
+			delete(states, message.From)
+			if cf >= f {
+				message := utils.Message{Fail: true}
+				multicast(message, config.MServer.Conns)
+			}
+		} else {
+			states[message.From] = message.Value
+			if len(states) == n-cf && checkStates(states) {
+				message := utils.Message{Output: true}
+				multicast(message, config.MServer.Conns)
+			}
 		}
 	}
 }

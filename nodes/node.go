@@ -3,6 +3,7 @@ package nodes
 import (
 	"MP3/utils"
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net"
@@ -47,46 +48,59 @@ func processIncomingValues(valChan chan utils.Message, node utils.Node, config u
 	var value float64
 	recievedMessages := 0
 	sum := 0.
-	var futureMessages []utils.Message
+	canFail := true
 
-	go multicast(node.Conns,
+	err := multicast(node.Conns,
 		utils.Message{From: from, Round: round, Value: node.Input},
+		true,
 		config.MinDelay,
 		config.MaxDelay)
+	if err != nil {
+		fmt.Println("Node "+node.Id+":", err.Error())
+		unicast_send(node.Conns[0], utils.Message{From: node.Id, Fail: true}, 0, 1)
+		return
+	}
 
 	for {
 		message := <-valChan
 
+		fmt.Printf("Node %s received message from %s for round %d\n", from, message.From, message.Round)
+
 		if message.Output {
 			println(value)
 			break
+		} else if message.Fail {
+			canFail = false
 		} else if message.Round < round {
 			continue
-		} else if message.Round == round {
+		} else if message.Round > round {
+			valChan <- message
+		} else {
 			recievedMessages++
 			sum += message.Value
-		} else if message.Round > round {
-			futureMessages = append(futureMessages, message)
-		}
 
-		if recievedMessages >= n-f {
-			value = sum / float64(n-f)
-			fmt.Printf("Node %s, Value %f, Round %d\n", from, value, round)
-			go multicast(node.Conns,
-				utils.Message{From: from, Round: round + 1, Value: value},
-				config.MinDelay,
-				config.MaxDelay)
-			for _, message := range futureMessages {
-				valChan <- message
+			if recievedMessages >= n-f {
+				value = sum / float64(n-f)
+				fmt.Printf("Node %s finished round %d ------------- \n", from, round)
+				err = multicast(node.Conns,
+					utils.Message{From: from, Round: round + 1, Value: value},
+					canFail,
+					config.MinDelay,
+					config.MaxDelay)
+				if err != nil {
+					fmt.Println("Node "+node.Id+":", err.Error())
+					unicast_send(node.Conns[0], utils.Message{From: node.Id, Fail: true}, 0, 1)
+					return
+				}
+				round++
+				recievedMessages = 0
+				sum = 0.
 			}
-			round++
-			recievedMessages = 0
-			sum = 0.
 		}
 	}
 }
 
-func multicast(conns []net.Conn, message utils.Message, min, max int) {
+func multicast(conns []net.Conn, message utils.Message, canFail bool, min, max int) error {
 
 	// Always send to master server
 	encoder := gob.NewEncoder(conns[0])
@@ -94,14 +108,20 @@ func multicast(conns []net.Conn, message utils.Message, min, max int) {
 	utils.CheckError(err)
 
 	// Send to all other conns
-	//rand.Seed(time.Now().UnixNano())
+	rand.Seed(time.Now().UnixNano())
+	//intid, err := strconv.ParseInt(message.From, 10, 64)
+	//rand.Seed(intid)
 	for _, conn := range conns[1:] {
-		//number := rand.Intn(100)
-		//if number < 95 {
-		//	unicast_send(conn, message, min, max)
-		//}
+		if canFail {
+			number := rand.Intn(100)
+			if number < 3 {
+				return errors.New("node has crashed")
+			}
+		}
 		go unicast_send(conn, message, min, max)
 	}
+
+	return nil
 }
 
 func unicast_send(conn net.Conn, message utils.Message, min, max int) {
