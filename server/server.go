@@ -25,8 +25,8 @@ func handleConnections(ch chan utils.Message, ln net.Listener) {
 
 func unicast_receive(ch chan utils.Message, conn net.Conn) {
 	for {
-		var message utils.Message
 		decoder := gob.NewDecoder(conn)
+		var message utils.Message
 		err := decoder.Decode(&message)
 		utils.CheckError(err)
 		ch <- message
@@ -35,7 +35,6 @@ func unicast_receive(ch chan utils.Message, conn net.Conn) {
 
 func processIncomingValues(ch chan utils.Message, config *utils.Config) {
 	n := len(config.Nodes)
-	f := config.F
 	cf := 0
 	states := make(map[string]float64)
 	for {
@@ -43,10 +42,7 @@ func processIncomingValues(ch chan utils.Message, config *utils.Config) {
 		if message.Fail {
 			cf++
 			delete(states, message.From)
-			if cf >= f {
-				message := utils.Message{Fail: true}
-				multicast(message, config.MServer.Conns)
-			}
+			continue
 		} else {
 			states[message.From] = message.Value
 			if len(states) == n-cf && checkStates(states) {
