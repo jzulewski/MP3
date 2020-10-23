@@ -5,9 +5,12 @@ import (
 	"MP3/server"
 	"MP3/utils"
 	"sync"
+	"time"
 )
 
 func main() {
+	start := time.Now()
+
 	// Initialize config struct
 	config := utils.CreateConfigStruct()
 
@@ -30,4 +33,7 @@ func main() {
 	// Wait for goroutines to finish
 	wg.Wait()
 	println("Simulation finished")
+	// Code to measure
+	duration := time.Since(start)
+	print(duration.Seconds())
 }
