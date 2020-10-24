@@ -5,12 +5,15 @@ import (
 	"net"
 )
 
+// Start master server
 func InitializeMasterServer(config *utils.Config) {
 	ln, err := net.Listen("tcp", ":"+config.MServer.Port)
 	utils.CheckError(err)
+	// Call as a goroutine so main function can continue
 	go handleServer(config, ln)
 }
 
+// Initialize connection with node servers
 func InitializeServerConnections(config *utils.Config) {
 	nodes := config.Nodes
 	for _, node := range nodes {

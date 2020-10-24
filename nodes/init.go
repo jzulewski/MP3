@@ -6,19 +6,22 @@ import (
 	"sync"
 )
 
+// Initialize a TCP listen server for each node according to config
 func InitializeNodeServers(config *utils.Config) {
 	for i, node := range config.Nodes {
 		ln, err := net.Listen("tcp", ":"+node.Port)
 		utils.CheckError(err)
+		// Save listener to config
 		config.Nodes[i].Server = ln
 	}
 }
 
+// Establish a connection from every node to the master server and from every node to every other node
 func InitializeNodeConnections(config *utils.Config) {
 	nodes := config.Nodes
-	ip := config.MServer.Ip
-	port := config.MServer.Port
-	CONNECT := ip + ":" + port
+	serverip := config.MServer.Ip
+	serverport := config.MServer.Port
+	CONNECT := serverip + ":" + serverport
 
 	// First connect each node to the master server
 	// It will be the first connection in node.Conns
