@@ -9,6 +9,18 @@ cd to the MP3 directory and type
 
 The purpose of this exercise is to simulate an approximate consensus algorithm that relaxes agreement by requiring that nodes must output values within .001 of each other. Our design allows for N nodes, each with their own server. We also implemented a master server for keeping track of when the nodes should output, as well as other statistics useful in measuring the performance of the algorithm. In initialization, the master server and nodes start TCP listen servers. Then connections are established from every node to every other node, as well as from nodes to the master server and vice versa. These connections are saved in structs which can be accessed later. During the simulation, the node servers accept all incoming connections and push messages they receive to a function which processes those messages and determines what to do. A wait in main waits for all goroutines to finish before exiting the program.
 
+# Config.txt
+
+The first line of config.txt is the minimum delay (ms), the maximum delay (ms), and the maximum number of node failures separated by a space. The second line is the IP and Port of the master server separated by a space. The subsequent lines are nodes. The format for nodes is `ID input IP Port`. An example of a valid config.txt is below.
+```
+1000 5000 1
+127.0.0.1 5000
+1 0.3 127.0.0.1 5001
+2 0.4 127.0.0.1 5002
+3 0.5 127.0.0.1 5003
+4 0.9 127.0.0.1 5004
+```
+
 # The Structs
 
 * The Config struct stores data about the system. One instance of this struct is inialized and passed to functions which use what they need from it. It contains information from config.txt, including the delay parameters, the amount of nodes that can fail, and information about nodes and the master server.
@@ -23,7 +35,7 @@ The purpose of this exercise is to simulate an approximate consensus algorithm t
 
 There are four packages: main, nodes, server, and utils. The main package contains only the main function which is run to start the program. The utils package contains utility functions like error checking and config struct initialization. The nodes and server packages are similar in that they both have init files. These files contain functions called by main to initialize servers, connections, and the simulation. In the nodes package, the node.go file is responsible for dealing with functions related to individual node processes like sending, receiving, and processing values. In the server package, the server.go file is responsible for dealing with functions related to master server processes like receiving messages from nodes and deciding when to output.
 
-While this package layout makes sense, some code is repeated in the server and nodes package which isn't ideal. Specifically, both nodes and the master server need to accept connections to the server, decode messages on those connections, and send the message to be processed. This design is encapsulated in the handleServer and handleNode functions, which are nearly identical pieces of code, repeated in different packages. Ideally this code block would only be written once and would called by the packages when necessary.
+While this package layout makes sense, some code is repeated in the server and nodes package which isn't ideal. Specifically, both nodes and the master server need to accept connections to the server, decode messages on those connections, and send the message to be processed. This design is encapsulated in the `handleServer` and `handleNode` functions, which are nearly identical pieces of code, repeated in different packages. Ideally this code block would only be written once and would called by the packages when necessary.
 
 # Sending Messages
 
@@ -41,7 +53,7 @@ If nodes crash at the same time it's possible that more than f nodes will crash.
 
 # When to Output
 
-To decide when to output, we used a master server that would recieve and analyze the values of the nodes. The master server stores these values in a map that maps the node ids to their float64 value. Each time the map is updated, the state of each node is checked against the state of every other node, and if the values are all within .001 of each other, the server sends a message to all nodes with the Output flag set to true. When nodes receive a message with the output flag they print their value and return from the function, effectively "closing" that node. When a node fails, the server makes sure to remove it from the map, because it's value no longer matters in determining the agreement property.
+To decide when to output, we used a master server that recieves and analyzes the values of the nodes. The master server stores these values in a map that maps the node ids to their float64 value. Each time the map is updated, the state of each node is checked against the state of every other node, and if the values are all within .001 of each other, the server sends a message to all nodes with the Output flag set to true. When nodes receive a message with the output flag they print their value and return from the function, effectively "closing" that node. When a node fails, the server makes sure to remove it from the map, because it's value no longer matters in determining the agreement property.
 
 One benefit to the master server approach to determining agreement is that the server has full information. While nodes only receive n-f messages per round, the master server receives all messages from non-crashed nodes. This means that it is never wrong about when to ouput, whereas a node working with partial information may think it should output when in reality it should not. One downside to this approach is that it is not very representative of reality because a master server with full information that never crashes is not very realistic.
 
