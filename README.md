@@ -14,6 +14,10 @@ The purpose of this exercise is to simulate an approximate consensus algorithm t
 
 * The Message struct is how the nodes communicate. The Value and Round fields indicate the value and round being sent and the From field indicates who the message is from. The Output flag tells the nodes to output their current value. The Fail field means that the node that sent the message has failed.
 
+# Sending Messages
+
+Sometimes a node doesn't receive a message. In the `unicast_receive` function notice that a new gob decoder is created every time a message is decoded. This is intentional, as creating the decoder outside the for loop and reusing it results in an "extra data in buffer", explained [here](https://github.com/golang/go/issues/29766).
+
 use of future messages list does not always keep order of incoming messages which might impact something.
 
 repeated functions handleConnections and unicast_receive in server and node packages.
