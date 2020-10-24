@@ -9,11 +9,11 @@ and secondly, there is not any clear correlation, positive or negative, between 
 
 **Number of Nodes**
 ![Screenshot](Screen%20Shot%202020-10-23%20at%209.47.57%20PM.png)
-In this experiment, we had one group of 4 nodes and another of 8 nodes. Other factors such as input range, number of failures, and delays were kept the same between the groups. Based on our observations, we noticed no correlation between the number of nodes and performance. As seen in the middle of the graph, sometimes the 4 nodes group was faster and other times it was the 8 nodes groups. Additionally, outliers occured such as when the first node crashed and the number of failures was limited to 1, which lead to all the rest of the nodes receiving the same 7 inputs in the first round and therefore reaching consensus usually quickly. Another outlier appears to be when the 4 nodes took 4 rounds and potentially could have had longer delays. Overall, we can conclude that an increase or decrease in the number of nodes does not have a direct relationship to performance.
+In this experiment, we had one group of 4 nodes and another of 8 nodes. Other factors such as input range, number of failures, and delays were kept the same between the groups. Based on our observations, we noticed no correlation between the number of nodes and performance. As seen in the middle of the graph, sometimes the 4 nodes group was faster and other times it was the 8 nodes groups. Additionally, outliers occured such as when the first node crashed and the number of failures was limited to 1, which lead to all the rest of the nodes receiving the same 7 inputs in the first round and therefore reaching consensus unusually quickly. Another outlier appears to be when the 4 nodes took 4 rounds and potentially could have had longer delays. Overall, we can conclude that an increase or decrease in the number of nodes does not have a direct relationship to performance.
 
 **Other Trends**
-In general, input ranges did not have a direct relationship to performance
-Increase Delay Times (both the minimum or maximum) worsened performance
-Our code had some bugs for crashing nodes, but throughout our testing, we did not notice the number of failures having a significicant impact on performance
+In general, input ranges did not have a direct relationship to performance.
+Increased delay times (both the minimum or maximum) worsened performance.
+Our code had some bugs for crashing nodes, but throughout our testing, we did not notice the number of failures having a significicant impact on performance.
 
 

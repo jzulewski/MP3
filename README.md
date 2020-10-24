@@ -60,3 +60,6 @@ One benefit to the master server approach to determining agreement is that the s
 # Storage of Future Values
 
 When a node receives a message with a value of a round greater than the round it's currently on it needs to store that value somehow. Currently the message is put back into the channel. This could result in an infinite loop until a new message with a round equal to the node's round is pushed to the channel. A better implemtation might involved storing the message in a list, but that would take more memory.
+
+# Example of Working Output
+![Screenshot](Screen%20Shot%202020-10-23%20at%208.07.52%20PM.png)
