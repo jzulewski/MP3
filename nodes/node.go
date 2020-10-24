@@ -30,8 +30,8 @@ func handleConnections(valChan chan utils.Message, ln net.Listener) {
 
 func unicast_receive(valChan chan utils.Message, conn net.Conn) {
 	for {
-		var message utils.Message
 		decoder := gob.NewDecoder(conn)
+		var message utils.Message
 		err := decoder.Decode(&message)
 		utils.CheckError(err)
 		valChan <- message
@@ -43,6 +43,7 @@ func processIncomingValues(valChan chan utils.Message, node utils.Node, config u
 	from := node.Id
 	n := len(config.Nodes)
 	f := config.F
+	cf := 0
 
 	round := 1
 	var value float64
@@ -57,20 +58,25 @@ func processIncomingValues(valChan chan utils.Message, node utils.Node, config u
 		config.MaxDelay)
 	if err != nil {
 		fmt.Println("Node "+node.Id+":", err.Error())
-		unicast_send(node.Conns[0], utils.Message{From: node.Id, Fail: true}, 0, 1)
+		err = multicast(node.Conns,
+			utils.Message{From: from, Fail: true},
+			false,
+			0, 1)
+		utils.CheckError(err)
 		return
 	}
 
 	for {
 		message := <-valChan
 
-		fmt.Printf("Node %s received message from %s for round %d\n", from, message.From, message.Round)
-
 		if message.Output {
 			println(value)
 			break
 		} else if message.Fail {
-			canFail = false
+			cf++
+			if cf >= f {
+				canFail = false
+			}
 		} else if message.Round < round {
 			continue
 		} else if message.Round > round {
@@ -81,7 +87,7 @@ func processIncomingValues(valChan chan utils.Message, node utils.Node, config u
 
 			if recievedMessages >= n-f {
 				value = sum / float64(n-f)
-				fmt.Printf("Node %s finished round %d ------------- \n", from, round)
+				fmt.Printf("Node %s finished round %d. Value %f\n", from, round, value)
 				err = multicast(node.Conns,
 					utils.Message{From: from, Round: round + 1, Value: value},
 					canFail,
@@ -89,7 +95,11 @@ func processIncomingValues(valChan chan utils.Message, node utils.Node, config u
 					config.MaxDelay)
 				if err != nil {
 					fmt.Println("Node "+node.Id+":", err.Error())
-					unicast_send(node.Conns[0], utils.Message{From: node.Id, Fail: true}, 0, 1)
+					err = multicast(node.Conns,
+						utils.Message{From: from, Fail: true},
+						false,
+						0, 1)
+					utils.CheckError(err)
 					return
 				}
 				round++
@@ -107,10 +117,8 @@ func multicast(conns []net.Conn, message utils.Message, canFail bool, min, max i
 	err := encoder.Encode(message)
 	utils.CheckError(err)
 
-	// Send to all other conns
+	// Send to all other conns with a chance to crash
 	rand.Seed(time.Now().UnixNano())
-	//intid, err := strconv.ParseInt(message.From, 10, 64)
-	//rand.Seed(intid)
 	for _, conn := range conns[1:] {
 		if canFail {
 			number := rand.Intn(100)
